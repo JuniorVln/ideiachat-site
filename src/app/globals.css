@@ -1,0 +1,333 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ── */
+:root {
+  /* Brand (Azul “corporativo” em textos/CTA gerais) */
+  --color-brand-primary: #1e40af;
+  --color-brand-primary-dark: #1e3a8a;
+  /** Ideia Chat — azul de interface (eyebrow, print ~#2282C7) */
+  --color-ideia-chat: #2282c7;
+  --color-ideia-chat-dark: #1b6a9e;
+  /** Passos em fundo escuro: tom um pouco mais claro, mesmo “família” do eyebrow, para borda + número legíveis */
+  --color-ideia-chat-bright: #4eb0ee;
+  --color-brand-dark: #0f172a;          /* texto forte / “ink” */
+  --color-brand-cta: #25D366;           /* WhatsApp green */
+  --color-brand-cta-dark: #128C7E;
+  --color-brand-cta-text: #ffffff;
+
+  /* Neutral scale (alinhado ao Tailwind slate) */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* Surface */
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8fafc;
+  --color-surface-card: #f1f5f9;
+
+  /* Text */
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-text-subtle: #94a3b8;
+
+  /* Border */
+  --color-border: #e2e8f0;
+  --color-border-focus: #1e40af;
+
+  /* Status */
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+  --color-warning: #d97706;
+
+  /* Spacing */
+  --section-y: 4rem;
+  --container-max: 75rem;
+  --content-max: 65ch;
+
+  /* Shadow */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Homepage animations ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-float-delayed { animation: float 3s ease-in-out 1.5s infinite; }
+.animate-marquee { animation: marquee 28s linear infinite; }
+.animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+.typing-dot { animation: typing-dot 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes scroll-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+@keyframes scroll-down {
+  from { transform: translateY(-50%); }
+  to   { transform: translateY(0); }
+}
+.animate-scroll-up   { animation: scroll-up   28s linear infinite; }
+.animate-scroll-down { animation: scroll-down 28s linear infinite; }
+
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Previne scroll duplo no Admin */
+body:has(.admin-root) {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Utilitários de layout (Fase 1 design tokens) */
+.py-section-y {
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
+}
+
+.max-w-container {
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.font-display {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* ── Prose (artigos de blog) ── */
+.prose-blog {
+  max-width: var(--content-max);
+  line-height: 1.75;
+}
+
+.prose-blog h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+}
+
+.prose-blog h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+}
+
+.prose-blog p {
+  margin-bottom: 1.25rem;
+  color: var(--color-text-muted);
+}
+
+.prose-blog ul,
+.prose-blog ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+  color: var(--color-text-muted);
+}
+
+.prose-blog li {
+  margin-bottom: 0.375rem;
+}
+
+.prose-blog strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.prose-blog a {
+  color: var(--color-brand-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.prose-blog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.prose-blog th,
+.prose-blog td {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.prose-blog th {
+  background: var(--color-surface-card);
+  font-weight: 600;
+}
+
+/* ── Blog Trust Marquee ── */
+.blog-trust-marquee-wrapper {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.blog-trust-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: blog-trust-scroll 40s linear infinite;
+}
+
+@keyframes blog-trust-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.3333%);
+  }
+}
+
+/* Pause animation on hover for better UX */
+.blog-trust-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Custom Scrollbar for Admin ── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e293b transparent;
+}
+
+/* Estilo para a sidebar especificamente se necessário */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+/* ── WhatsApp Floating Button ── */
+@keyframes wa-pulse-ring {
+  0%   { transform: scale(1); opacity: 0.75; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+@keyframes wa-neon-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 6px 2px rgba(37, 211, 102, 0.55),
+      0 0 18px 4px rgba(37, 211, 102, 0.22),
+      0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 14px 4px rgba(37, 211, 102, 0.75),
+      0 0 36px 8px rgba(37, 211, 102, 0.35),
+      0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.wa-float-btn {
+  position: fixed;
+  bottom: 1.75rem;
+  right: 1.75rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: #25D366;
+  border-radius: 9999px;
+  color: #ffffff;
+  animation: wa-neon-glow 2s ease-in-out infinite;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  text-decoration: none;
+}
+
+.wa-float-btn:hover {
+  transform: scale(1.12);
+  filter: brightness(1.1);
+}
+
+.wa-float-btn:focus-visible {
+  outline: 3px solid #25D366;
+  outline-offset: 3px;
+}
+
+.wa-float-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: #25D366;
+  animation: wa-pulse-ring 2s ease-out infinite;
+}
