@@ -284,7 +284,7 @@ export function PricingSection() {
   const [billing, setBilling] = useState<BillingCycle>("mensal");
 
   return (
-    <PriceUnlockProvider whatsappNumber={IDEIA.whatsappDigits} origem="home-preco">
+    <PriceUnlockProvider origem="home-preco">
       <section id="planos" className="bg-[#0F172A] py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}

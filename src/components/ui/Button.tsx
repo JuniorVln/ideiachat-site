@@ -11,16 +11,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-brand-primary text-white hover:bg-brand-primary-dark focus-visible:ring-brand-primary",
+    "bg-[var(--color-brand-primary)] text-white hover:bg-[var(--color-brand-primary-dark)] focus-visible:ring-[var(--color-brand-primary)] shadow-md",
   ghost:
-    "bg-transparent text-brand-primary hover:bg-blue-50 focus-visible:ring-brand-primary",
+    "bg-transparent text-[var(--color-brand-primary)] hover:bg-blue-50 focus-visible:ring-[var(--color-brand-primary)]",
   whatsapp:
     "bg-[var(--color-brand-cta)] text-[var(--color-brand-cta-text)] hover:bg-[var(--color-brand-cta-dark)] focus-visible:ring-[var(--color-brand-cta)] font-semibold shadow-md",
   outline:
-    "border border-border-focus text-brand-primary hover:bg-blue-50 focus-visible:ring-brand-primary",
+    "border border-[var(--color-border-focus)] text-[var(--color-brand-primary)] hover:bg-blue-50 focus-visible:ring-[var(--color-brand-primary)]",
   /** CTA Ideia Chat (azul marca); PageCTA usa com className que pode sobrescrever p/ gradiente. */
   ideia:
-    "bg-brand-primary text-white hover:bg-brand-primary-dark focus-visible:ring-brand-primary font-semibold shadow-md",
+    "bg-[var(--color-brand-primary)] text-white hover:bg-[var(--color-brand-primary-dark)] focus-visible:ring-[var(--color-brand-primary)] font-semibold shadow-md",
 };
 
 const sizeClasses: Record<Size, string> = {

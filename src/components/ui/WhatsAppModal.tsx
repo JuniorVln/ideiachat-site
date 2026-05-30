@@ -9,10 +9,14 @@ interface WhatsAppModalProps {
   paginaId?: string;
   variacaoId?: string;
   keyword?: string;
-  whatsappNumber: string;
+  whatsappNumber?: string;
   origem?: string;
   title?: string;
   description?: string;
+  /** Se false, salva lead e não redireciona para WhatsApp. */
+  redirectWhatsapp?: boolean;
+  ctaLabel?: string;
+  ctaVariant?: "primary" | "whatsapp" | "ideia";
   /** Disparado quando o lead é enviado com sucesso (antes/junto do fechamento). */
   onSuccess?: () => void;
 }
@@ -35,6 +39,9 @@ export function WhatsAppModal({
   origem,
   title = "Falar com especialista",
   description = "Preencha e você será redirecionado para o WhatsApp.",
+  redirectWhatsapp = true,
+  ctaLabel,
+  ctaVariant,
   onSuccess,
 }: WhatsAppModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -111,7 +118,7 @@ export function WhatsAppModal({
         open:animate-in open:fade-in open:slide-in-from-bottom-4
       "
     >
-      <div ref={panelRef} className="p-6">
+      <div ref={panelRef} className="max-h-[min(90vh,640px)] overflow-y-auto p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 id="modal-title" className="text-xl font-bold text-text">
@@ -144,6 +151,9 @@ export function WhatsAppModal({
           keyword={keyword}
           whatsappNumber={whatsappNumber}
           origem={origem}
+          redirectWhatsapp={redirectWhatsapp}
+          ctaLabel={ctaLabel}
+          ctaVariant={ctaVariant}
           onSuccess={() => {
             onSuccess?.();
             onClose();

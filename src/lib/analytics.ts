@@ -11,6 +11,8 @@ export const GA_EVENTS = {
   FORM_START: "form_start",
   FORM_ABANDON: "form_abandon",
   LEAD_SUBMIT: "lead_submit",
+  PRICE_GATE_OPEN: "price_gate_open",
+  PRICE_UNLOCK: "price_unlock",
   WHATSAPP_OPEN: "whatsapp_open",
   WHATSAPP_REDIRECT: "whatsapp_redirect",
 } as const;

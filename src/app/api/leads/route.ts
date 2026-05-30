@@ -17,6 +17,8 @@ const LeadSchema = z.object({
   variacao_id: z.string().uuid().nullable().optional(),
   /** Fonte do lead para o comercial (ex.: "home-preco", "lp-preco", "blog-whatsapp-banido"). */
   origem: z.string().max(60).optional(),
+  /** Quando true, grava o lead mas não devolve redirect para WhatsApp (ex.: desbloqueio de preços). */
+  skip_whatsapp: z.boolean().optional().default(false),
   utms: z
     .object({
       utm_source: z.string().optional(),
@@ -69,7 +71,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: message }, { status: 422 });
     }
 
-    const { nome, email, telefone, pagina_id, variacao_id, origem, utms } = parsed.data;
+    const { nome, email, telefone, pagina_id, variacao_id, origem, skip_whatsapp, utms } =
+      parsed.data;
 
     const supabase = getSupabaseAdminOptional();
     if (!supabase) {
@@ -110,10 +113,11 @@ export async function POST(req: NextRequest) {
     const { data: existing } = await dedupQuery.maybeSingle();
 
     if (existing) {
-      return NextResponse.json({
-        success: true,
-        redirect_url: buildWhatsappRedirectUrl(keyword),
-      });
+      return NextResponse.json(
+        skip_whatsapp
+          ? { success: true }
+          : { success: true, redirect_url: buildWhatsappRedirectUrl(keyword) },
+      );
     }
 
     const ip = getClientIp(req);
@@ -144,10 +148,11 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       if (isDuplicateLeadError(insertError.message, insertError.code)) {
-        return NextResponse.json({
-          success: true,
-          redirect_url: buildWhatsappRedirectUrl(keyword),
-        });
+        return NextResponse.json(
+          skip_whatsapp
+            ? { success: true }
+            : { success: true, redirect_url: buildWhatsappRedirectUrl(keyword) },
+        );
       }
       console.error("[leads] insert error:", insertError.message);
       return NextResponse.json(
@@ -156,10 +161,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      redirect_url: buildWhatsappRedirectUrl(keyword),
-    });
+    return NextResponse.json(
+      skip_whatsapp
+        ? { success: true }
+        : { success: true, redirect_url: buildWhatsappRedirectUrl(keyword) },
+    );
   } catch (err) {
     console.error("[leads] unexpected error:", err);
     return NextResponse.json(

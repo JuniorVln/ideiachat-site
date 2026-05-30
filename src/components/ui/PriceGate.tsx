@@ -30,7 +30,6 @@ export function usePriceUnlock(): PriceUnlockValue {
 
 interface PriceUnlockProviderProps {
   children: ReactNode;
-  whatsappNumber: string;
   /** Fonte do lead p/ o comercial (ex.: "home-preco", "lp-preco"). */
   origem: string;
   paginaId?: string;
@@ -39,7 +38,6 @@ interface PriceUnlockProviderProps {
 
 export function PriceUnlockProvider({
   children,
-  whatsappNumber,
   origem,
   paginaId,
   variacaoId,
@@ -57,18 +55,19 @@ export function PriceUnlockProvider({
 
   const requestUnlock = useCallback(() => {
     if (unlocked) return;
-    trackEvent(GA_EVENTS.WHATSAPP_OPEN, { source: "price_gate", origem });
+    trackEvent(GA_EVENTS.PRICE_GATE_OPEN, { origem });
     setModalOpen(true);
   }, [unlocked, origem]);
 
   const handleSuccess = useCallback(() => {
     setUnlocked(true);
+    trackEvent(GA_EVENTS.PRICE_UNLOCK, { origem });
     try {
       localStorage.setItem(STORAGE_KEY, "1");
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [origem]);
 
   return (
     <PriceUnlockContext.Provider value={{ unlocked, requestUnlock }}>
@@ -76,12 +75,14 @@ export function PriceUnlockProvider({
       <WhatsAppModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        whatsappNumber={whatsappNumber}
         paginaId={paginaId}
         variacaoId={variacaoId}
         origem={origem}
+        redirectWhatsapp={false}
         title="Ver valores dos planos"
-        description="Deixe seu contato e liberamos os preços na hora — sem compromisso."
+        description="Preencha seus dados e liberamos os preços na hora — sem compromisso."
+        ctaLabel="Liberar valores"
+        ctaVariant="primary"
         onSuccess={handleSuccess}
       />
     </PriceUnlockContext.Provider>
@@ -90,7 +91,7 @@ export function PriceUnlockProvider({
 
 /**
  * Envolve um valor de preço, aplicando blur enquanto bloqueado.
- * Overlay fosco + blur leve evita o efeito granulado de blur forte em texto.
+ * Blur no próprio texto + máscara em gradiente (sem caixa fosca com borda visível).
  */
 export function GatedPrice({
   children,
@@ -109,15 +110,22 @@ export function GatedPrice({
     <span
       className={`relative inline-flex min-w-[3.5ch] cursor-pointer select-none items-baseline ${className}`}
       onClick={requestUnlock}
-      aria-hidden
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          requestUnlock();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label="Ver valores dos planos"
     >
-      <span className="inline-block opacity-[0.42] blur-[3px] saturate-[0.35] [text-shadow:0_0_14px_currentColor]">
+      <span
+        className="inline-block blur-[6px] opacity-[0.48] saturate-[0.4] [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)]"
+        aria-hidden
+      >
         {children}
       </span>
-      <span
-        className="pointer-events-none absolute -inset-x-1 -inset-y-0.5 rounded-md bg-white/[0.14] backdrop-blur-[6px]"
-        aria-hidden
-      />
     </span>
   );
 }

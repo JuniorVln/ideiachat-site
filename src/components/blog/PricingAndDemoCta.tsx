@@ -231,7 +231,6 @@ export function PricingAndDemoCta({
 
   return (
     <PriceUnlockProvider
-      whatsappNumber={whatsappNumber || IDEIA.whatsappDigits}
       origem="lp-preco"
       paginaId={paginaId}
       variacaoId={variacaoId}
