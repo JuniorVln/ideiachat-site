@@ -6,17 +6,19 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fromHere = (p: string) => path.join(__dirname, p);
-/** Raiz do repositório Git (`Rede Ideia/`). */
+/** Raiz do monorepo local (`Rede Ideia/`). Ausente no repo standalone (Vercel). */
 const workspaceRoot = fromHere("..");
-/** Pasta `ideiapages/` (sistema + `.env` compartilhado). */
+/** Pasta `ideiapages/` — só existe quando clonado dentro do monorepo. */
 const ideiapagesRoot = path.join(workspaceRoot, "ideiapages");
+const isMonorepoCheckout = existsSync(ideiapagesRoot);
 
-if (existsSync(path.join(ideiapagesRoot, ".env")) || existsSync(path.join(ideiapagesRoot, ".env.local"))) {
+if (
+  isMonorepoCheckout &&
+  (existsSync(path.join(ideiapagesRoot, ".env")) || existsSync(path.join(ideiapagesRoot, ".env.local")))
+) {
   loadEnvConfig(ideiapagesRoot);
 } else if (existsSync(fromHere(".env")) || existsSync(fromHere(".env.local"))) {
   loadEnvConfig(__dirname);
-} else {
-  loadEnvConfig(ideiapagesRoot);
 }
 
 const BASE_SECURITY_HEADERS = [
@@ -35,7 +37,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
-  outputFileTracingRoot: workspaceRoot,
+  ...(isMonorepoCheckout ? { outputFileTracingRoot: workspaceRoot } : {}),
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

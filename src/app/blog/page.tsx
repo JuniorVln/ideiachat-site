@@ -43,14 +43,19 @@ function getCategoryFromSlug(slug: string): { label: string; gradient: string; d
 }
 
 export default async function BlogArchivePage() {
-  const supabase = getSupabasePublicReadClient();
-  const { data: paginasRaw } = await supabase
-    .from("paginas")
-    .select("slug, titulo, subtitulo, publicado_em, og_image_url, meta_description")
-    .eq("status", "publicado")
-    .order("publicado_em", { ascending: false });
+  let paginas: PaginaListItem[] = [];
 
-  const paginas = (paginasRaw ?? []) as PaginaListItem[];
+  try {
+    const supabase = getSupabasePublicReadClient();
+    const { data: paginasRaw } = await supabase
+      .from("paginas")
+      .select("slug, titulo, subtitulo, publicado_em, og_image_url, meta_description")
+      .eq("status", "publicado")
+      .order("publicado_em", { ascending: false });
+    paginas = (paginasRaw ?? []) as PaginaListItem[];
+  } catch {
+    // Build/deploy sem env Supabase ou indisponibilidade temporária: página vazia.
+  }
   const [featured, ...rest] = paginas;
 
   const collectionPageSchema = {
