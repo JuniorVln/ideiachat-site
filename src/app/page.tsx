@@ -15,6 +15,9 @@ import { HomeFooter } from "@/components/home/HomeFooter";
 
 const SITE_URL = getSiteUrl();
 
+/** Blog preview e dados Supabase atualizam em runtime. */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Ideia Chat — Plataforma de Atendimento WhatsApp para Empresas",
   description:

@@ -16,6 +16,9 @@ type PaginaListItem = Pick<
 
 const SITE_URL = getSiteUrl();
 
+/** Busca artigos em runtime (env Supabase disponível na Vercel após deploy). */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Blog — Ideia Chat | Atendimento WhatsApp com IA",
   description:
