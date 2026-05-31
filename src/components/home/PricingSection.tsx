@@ -328,10 +328,6 @@ export function PricingSection() {
                 unlockedLabel="Valores liberados"
               />
             </div>
-
-            <p className="mt-3 text-xs text-slate-500">
-              Os valores ficam borrados até você deixar seu contato — liberamos na hora.
-            </p>
           </div>
 
           {/* Plan cards */}

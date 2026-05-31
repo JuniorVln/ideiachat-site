@@ -58,6 +58,7 @@ export function LeadForm({
   const [telefone, setTelefone] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const utms = useUtmTracking();
   const startedRef = useRef(false);
@@ -124,6 +125,14 @@ export function LeadForm({
       if (redirectWhatsapp && data.redirect_url) {
         trackEvent(GA_EVENTS.WHATSAPP_REDIRECT, { pagina_id: paginaId, keyword });
         window.open(data.redirect_url, "_blank", "noopener,noreferrer");
+        onSuccess?.();
+        return;
+      }
+
+      if (!redirectWhatsapp) {
+        setSaved(true);
+        window.setTimeout(() => onSuccess?.(), 350);
+        return;
       }
 
       onSuccess?.();
@@ -173,11 +182,18 @@ export function LeadForm({
         <p role="alert" className="text-sm text-red-600 text-center">{serverError}</p>
       )}
 
+      {saved && (
+        <p role="status" className="text-sm font-medium text-green-600 text-center">
+          Valores liberados!
+        </p>
+      )}
+
       <Button
         type="submit"
         variant={resolvedCtaVariant}
         size="lg"
         loading={loading}
+        disabled={saved}
         className="w-full mt-1"
       >
         {redirectWhatsapp ? (

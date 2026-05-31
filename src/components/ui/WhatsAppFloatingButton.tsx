@@ -23,6 +23,8 @@ export function WhatsAppFloatingButton() {
       <svg
         viewBox="0 0 24 24"
         fill="currentColor"
+        width={28}
+        height={28}
         className="relative z-10 size-7"
         aria-hidden="true"
       >

@@ -4,6 +4,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { getSiteUrl } from "@/lib/site-url";
 import { IDEIA } from "@/lib/ideia-brand";
 import { WhatsAppFloatingButton } from "@/components/ui/WhatsAppFloatingButton";
+import "./base.css";
 import "./globals.css";
 
 const inter = Inter({

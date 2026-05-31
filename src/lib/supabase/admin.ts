@@ -4,9 +4,19 @@ import type { Database } from "@/lib/database.types";
 let _admin: ReturnType<typeof createClient<Database>> | null = null;
 
 export function isSupabaseAdminConfigured(): boolean {
-  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  return Boolean(url?.trim() && key?.trim());
+  const url = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  return Boolean(url && key);
+}
+
+/** Cliente admin novo a cada chamada (evita cache stale em serverless). */
+export function createSupabaseAdminClient(): ReturnType<typeof createClient<Database>> | null {
+  const url = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !key) return null;
+  return createClient<Database>(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 /**

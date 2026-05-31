@@ -8,10 +8,20 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 import { WhatsAppModal } from "./WhatsAppModal";
 import { GA_EVENTS, trackEvent } from "@/lib/analytics";
 
 const STORAGE_KEY = "ideia_price_unlocked";
+export const PRICE_UNLOCK_EVENT = "ideia-price-unlocked";
+
+function readUnlockedFromStorage(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 interface PriceUnlockValue {
   unlocked: boolean;
@@ -46,12 +56,10 @@ export function PriceUnlockProvider({
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === "1") setUnlocked(true);
-    } catch {
-      /* localStorage indisponível: mantém bloqueado */
-    }
+    if (readUnlockedFromStorage()) setUnlocked(true);
   }, []);
+
+  const closeModal = useCallback(() => setModalOpen(false), []);
 
   const requestUnlock = useCallback(() => {
     if (unlocked) return;
@@ -60,13 +68,17 @@ export function PriceUnlockProvider({
   }, [unlocked, origem]);
 
   const handleSuccess = useCallback(() => {
-    setUnlocked(true);
-    trackEvent(GA_EVENTS.PRICE_UNLOCK, { origem });
     try {
       localStorage.setItem(STORAGE_KEY, "1");
     } catch {
       /* ignore */
     }
+    flushSync(() => {
+      setUnlocked(true);
+    });
+    window.dispatchEvent(new Event(PRICE_UNLOCK_EVENT));
+    setModalOpen(false);
+    trackEvent(GA_EVENTS.PRICE_UNLOCK, { origem });
   }, [origem]);
 
   return (
@@ -74,7 +86,7 @@ export function PriceUnlockProvider({
       {children}
       <WhatsAppModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={closeModal}
         paginaId={paginaId}
         variacaoId={variacaoId}
         origem={origem}
@@ -101,8 +113,18 @@ export function GatedPrice({
   className?: string;
 }) {
   const { unlocked, requestUnlock } = usePriceUnlock();
+  const [storageUnlocked, setStorageUnlocked] = useState(false);
 
-  if (unlocked) {
+  useEffect(() => {
+    if (readUnlockedFromStorage()) setStorageUnlocked(true);
+    const sync = () => setStorageUnlocked(true);
+    window.addEventListener(PRICE_UNLOCK_EVENT, sync);
+    return () => window.removeEventListener(PRICE_UNLOCK_EVENT, sync);
+  }, []);
+
+  const visible = unlocked || storageUnlocked;
+
+  if (visible) {
     return <span className={className}>{children}</span>;
   }
 
@@ -121,7 +143,7 @@ export function GatedPrice({
       aria-label="Ver valores dos planos"
     >
       <span
-        className="inline-block blur-[6px] opacity-[0.48] saturate-[0.4] [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)]"
+        className="inline-block pointer-events-none blur-[6px] opacity-[0.48] saturate-[0.4] [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)]"
         aria-hidden
       >
         {children}
@@ -141,14 +163,25 @@ export function RevealPricesButton({
   unlockedLabel?: string;
 }) {
   const { unlocked, requestUnlock } = usePriceUnlock();
+  const [storageUnlocked, setStorageUnlocked] = useState(false);
+
+  useEffect(() => {
+    if (readUnlockedFromStorage()) setStorageUnlocked(true);
+    const sync = () => setStorageUnlocked(true);
+    window.addEventListener(PRICE_UNLOCK_EVENT, sync);
+    return () => window.removeEventListener(PRICE_UNLOCK_EVENT, sync);
+  }, []);
+
+  const visible = unlocked || storageUnlocked;
+
   return (
     <button
       type="button"
       onClick={requestUnlock}
-      disabled={unlocked}
+      disabled={visible}
       className={className}
     >
-      {unlocked ? (
+      {visible ? (
         <>
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

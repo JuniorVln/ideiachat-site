@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { z } from "zod";
-import { getSupabaseAdminOptional } from "@/lib/supabase/admin";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isLikelyFakePhone, onlyDigits } from "@/lib/phone";
 import type { Database } from "@/lib/database.types";
 
@@ -74,8 +74,9 @@ export async function POST(req: NextRequest) {
     const { nome, email, telefone, pagina_id, variacao_id, origem, skip_whatsapp, utms } =
       parsed.data;
 
-    const supabase = getSupabaseAdminOptional();
+    const supabase = createSupabaseAdminClient();
     if (!supabase) {
+      console.error("[leads] Supabase admin indisponível — verifique SUPABASE_SERVICE_ROLE_KEY no deploy.");
       return NextResponse.json(
         { success: false, error: "Serviço temporariamente indisponível." },
         { status: 503 },

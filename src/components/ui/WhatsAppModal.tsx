@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { LeadForm } from "./LeadForm";
 
 interface WhatsAppModalProps {
@@ -17,7 +18,7 @@ interface WhatsAppModalProps {
   redirectWhatsapp?: boolean;
   ctaLabel?: string;
   ctaVariant?: "primary" | "whatsapp" | "ideia";
-  /** Disparado quando o lead é enviado com sucesso (antes/junto do fechamento). */
+  /** Disparado quando o lead é enviado com sucesso. */
   onSuccess?: () => void;
 }
 
@@ -25,7 +26,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const sel =
     'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   return Array.from(container.querySelectorAll<HTMLElement>(sel)).filter(
-    (el) => !el.closest("[hidden]") && el.getAttribute("aria-hidden") !== "true"
+    (el) => !el.closest("[hidden]") && el.getAttribute("aria-hidden") !== "true",
   );
 }
 
@@ -44,33 +45,29 @@ export function WhatsAppModal({
   ctaVariant,
   onSuccess,
 }: WhatsAppModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (isOpen) {
-      dialog.showModal();
-      closeButtonRef.current?.focus();
-    } else {
-      dialog.close();
-    }
+    if (!isOpen) return;
+    closeButtonRef.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, [isOpen]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const handleClose = () => onClose();
-    dialog.addEventListener("close", handleClose);
-    return () => dialog.removeEventListener("close", handleClose);
-  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
 
     function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
       const panel = panelRef.current;
       if (!panel || e.key !== "Tab") return;
       const list = getFocusableElements(panel);
@@ -90,48 +87,38 @@ export function WhatsAppModal({
 
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
-  function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
-    const rect = dialogRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    if (
-      e.clientX < rect.left ||
-      e.clientX > rect.right ||
-      e.clientY < rect.top ||
-      e.clientY > rect.bottom
-    ) {
-      onClose();
-    }
-  }
+  if (!isOpen) return null;
 
-  return (
-    <dialog
-      ref={dialogRef}
-      onClick={handleBackdropClick}
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      className="
-        fixed left-1/2 top-1/2 m-0 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2
-        rounded-2xl p-0 shadow-modal
-        backdrop:bg-black/50 backdrop:backdrop-blur-sm
-        open:animate-in open:fade-in open:slide-in-from-bottom-4
-      "
     >
-      <div ref={panelRef} className="max-h-[min(90vh,640px)] overflow-y-auto p-6">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-default"
+        aria-label="Fechar modal"
+        onClick={onClose}
+      />
+      <div
+        ref={panelRef}
+        className="relative z-10 w-full max-w-md max-h-[min(90vh,640px)] overflow-y-auto rounded-2xl bg-white p-6 shadow-[var(--shadow-modal)]"
+      >
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 id="modal-title" className="text-xl font-bold text-text">
               {title}
             </h2>
-            <p className="text-sm text-text-muted mt-0.5">
-              {description}
-            </p>
+            <p className="text-sm text-text-muted mt-0.5">{description}</p>
           </div>
           <button
             ref={closeButtonRef}
             type="button"
-            onClick={() => onClose()}
+            onClick={onClose}
             aria-label="Fechar modal"
             className="
               ml-4 flex-shrink-0 p-1.5 rounded-lg text-text-subtle
@@ -154,12 +141,10 @@ export function WhatsAppModal({
           redirectWhatsapp={redirectWhatsapp}
           ctaLabel={ctaLabel}
           ctaVariant={ctaVariant}
-          onSuccess={() => {
-            onSuccess?.();
-            onClose();
-          }}
+          onSuccess={onSuccess}
         />
       </div>
-    </dialog>
+    </div>,
+    document.body,
   );
 }
