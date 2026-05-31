@@ -10,6 +10,7 @@ import { BlogLegalFooter } from "@/components/blog/BlogLegalFooter";
 import { RelatedPages } from "@/components/blog/RelatedPages";
 import { SalesPageHero } from "@/components/blog/BlogArticleHero";
 import { PageContentSections } from "@/components/blog/PageContentSections";
+import { BlogPostPage } from "@/components/blog/BlogPostPage";
 import {
   resolveVariacaoId,
   variacaoCookieName,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/experiments/pick-variation";
 import { getAdminUser } from "@/lib/admin/session";
 import { loadBlogPost } from "@/lib/blog/load-post";
+import { loadEditorialPost } from "@/lib/blog/load-post-editorial";
 import { parseMarkdownToSections } from "@/lib/blog/parse-sections";
 import type { VariacaoPagina } from "@/lib/blog/get-pagina";
 import { PUBLIC_CONTENT_BASE_PATH } from "@/lib/public-pages";
@@ -39,6 +41,33 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug: rawSlug } = await params;
+
+  // Post editorial tem prioridade
+  const post = await loadEditorialPost(rawSlug);
+  if (post) {
+    const canonical = `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${post.slug}`;
+    const title = post.meta_titulo ?? post.titulo;
+    const description = post.meta_descricao ?? post.subtitulo ?? post.resumo ?? undefined;
+    const ogImage = post.og_image_url ?? post.imagem_capa_url ?? undefined;
+    return {
+      title,
+      description,
+      alternates: { canonical },
+      openGraph: {
+        title,
+        description,
+        url: canonical,
+        type: "article",
+        locale: "pt_BR",
+        siteName: "Ideia Chat",
+        publishedTime: post.publicado_em,
+        images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: title }] : [],
+      },
+      twitter: { card: "summary_large_image", title, description, images: ogImage ? [ogImage] : [] },
+    };
+  }
+
+  // Fallback: LP
   const data = await loadBlogPost(rawSlug);
   if (!data) return { title: "Página não encontrada" };
 
@@ -55,13 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     robots: {
       index: true,
       follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
-      },
+      googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
     },
     openGraph: {
       title,
@@ -74,33 +97,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: pagina.atualizado_em ?? pagina.publicado_em ?? undefined,
       images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: title }] : [],
     },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
+    twitter: { card: "summary_large_image", title, description, images: ogImage ? [ogImage] : [] },
   };
 }
 
-interface FaqItem {
-  pergunta: string;
-  resposta: string;
-}
+interface FaqItem { pergunta: string; resposta: string; }
 
 function parseFaq(raw: unknown): FaqItem[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter(
     (item): item is FaqItem =>
-      typeof item === "object" &&
-      item !== null &&
-      "pergunta" in item &&
-      "resposta" in item,
+      typeof item === "object" && item !== null && "pergunta" in item && "resposta" in item,
   );
 }
 
-export default async function PublicSalesPage({ params, searchParams }: Props) {
+export default async function BlogSlugPage({ params, searchParams }: Props) {
   const { slug: rawSlug } = await params;
+
+  // ── Post editorial (blog) ──────────────────────────────────────────────────
+  const post = await loadEditorialPost(rawSlug);
+  if (post) {
+    return <BlogPostPage post={post} />;
+  }
+
+  // ── Landing Page (sistema) ─────────────────────────────────────────────────
   const data = await loadBlogPost(rawSlug);
   if (!data) notFound();
 
@@ -124,13 +144,9 @@ export default async function PublicSalesPage({ params, searchParams }: Props) {
   const previewToken = firstQueryString(sp.preview_token);
   const adminUser = await getAdminUser();
   const validPreviewToken =
-    !!previewToken &&
-    !!process.env.PREVIEW_TOKEN &&
-    previewToken === process.env.PREVIEW_TOKEN;
+    !!previewToken && !!process.env.PREVIEW_TOKEN && previewToken === process.env.PREVIEW_TOKEN;
   const isAdminPreview =
-    (!!adminUser || validPreviewToken) &&
-    !!previewVariacaoId &&
-    arms.some((v) => v.id === previewVariacaoId);
+    (!!adminUser || validPreviewToken) && !!previewVariacaoId && arms.some((v) => v.id === previewVariacaoId);
 
   const cookieStore = await cookies();
   const visitorId = cookieStore.get(VISITOR_COOKIE)?.value ?? "anon";
@@ -159,19 +175,13 @@ export default async function PublicSalesPage({ params, searchParams }: Props) {
       : pagina.corpo_mdx;
 
   const ogForSchema = visuals.heroSrc ?? pagina.og_image_url;
-
-  // Parsear markdown em seções estruturadas
   const sections = parseMarkdownToSections(corpoMdx ?? "");
 
   return (
     <>
       {isAdminPreview && variacaoAtiva ? (
-        <div
-          role="status"
-          className="bg-amber-400/95 text-amber-950 text-center text-sm font-medium py-2.5 px-4 border-b border-amber-500/80"
-        >
-          Pré-visualização admin: <strong>{variacaoAtiva.nome}</strong> ({variacaoAtiva.provider}) — não
-          contabiliza exposição A/B
+        <div role="status" className="bg-amber-400/95 text-amber-950 text-center text-sm font-medium py-2.5 px-4 border-b border-amber-500/80">
+          Pré-visualização admin: <strong>{variacaoAtiva.nome}</strong> ({variacaoAtiva.provider}) — não contabiliza exposição A/B
         </div>
       ) : null}
 
@@ -191,7 +201,6 @@ export default async function PublicSalesPage({ params, searchParams }: Props) {
         articleSection={focusKeyword}
       />
 
-      {/* ── Hero (inalterado) ─────────────────────────── */}
       <SalesPageHero
         titulo={pagina.titulo}
         subtitulo={pagina.subtitulo}
@@ -202,33 +211,20 @@ export default async function PublicSalesPage({ params, searchParams }: Props) {
         publicadoEm={pagina.publicado_em}
       />
 
-      {/* ── Marquee (inalterado) ─────────────────────── */}
       <BlogTrustStrip />
-
-      {/* ── Header sticky ───────────────────────────── */}
       <StickyHeader sentinelId="hero-scroll-sentinel" headline={pagina.titulo} />
 
-      {/* ── Conteúdo dinâmico ────────────────────────── */}
       <main aria-label="Conteúdo comercial da página">
         {focusKeyword ? (
-          <p className="sr-only">
-            Foco desta oferta: {focusKeyword}. Conteúdo em português para empresas no Brasil.
-          </p>
+          <p className="sr-only">Foco desta oferta: {focusKeyword}. Conteúdo em português para empresas no Brasil.</p>
         ) : null}
-
         <PageContentSections
           sections={sections}
           faqs={faqs}
           pageTitulo={pagina.titulo}
           focusKeyword={focusKeyword}
-          excludeImageSrcs={
-            [visuals.heroSrc, visuals.inlineSrc].filter((u): u is string => Boolean(u)) as string[]
-          }
-          inlineFigure={{
-            src: visuals.inlineSrc,
-            alt: visuals.inlineAlt,
-            credit: visuals.inlineCredit,
-          }}
+          excludeImageSrcs={[visuals.heroSrc, visuals.inlineSrc].filter((u): u is string => Boolean(u)) as string[]}
+          inlineFigure={{ src: visuals.inlineSrc, alt: visuals.inlineAlt, credit: visuals.inlineCredit }}
           paginaId={pagina.id}
           variacaoId={variacaoAtivaId}
           whatsappNumber={WA_NUMBER}
@@ -236,9 +232,7 @@ export default async function PublicSalesPage({ params, searchParams }: Props) {
       </main>
 
       <RelatedPages pages={relatedPages} />
-
       <BlogLegalFooter />
-
       <FloatingCTA
         paginaId={pagina.id}
         variacaoId={variacaoAtivaId}

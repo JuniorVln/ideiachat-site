@@ -634,6 +634,66 @@ export type Database = {
           },
         ]
       }
+      posts: {
+        Row: {
+          id: string
+          slug: string
+          titulo: string
+          subtitulo: string | null
+          resumo: string | null
+          corpo_mdx: string | null
+          categoria: string | null
+          tags: string[] | null
+          imagem_capa_url: string | null
+          autor: string
+          publicado_em: string
+          status: string
+          meta_titulo: string | null
+          meta_descricao: string | null
+          og_image_url: string | null
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          titulo: string
+          subtitulo?: string | null
+          resumo?: string | null
+          corpo_mdx?: string | null
+          categoria?: string | null
+          tags?: string[] | null
+          imagem_capa_url?: string | null
+          autor?: string
+          publicado_em?: string
+          status?: string
+          meta_titulo?: string | null
+          meta_descricao?: string | null
+          og_image_url?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          titulo?: string
+          subtitulo?: string | null
+          resumo?: string | null
+          corpo_mdx?: string | null
+          categoria?: string | null
+          tags?: string[] | null
+          imagem_capa_url?: string | null
+          autor?: string
+          publicado_em?: string
+          status?: string
+          meta_titulo?: string | null
+          meta_descricao?: string | null
+          og_image_url?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: []
+      }
       paginas: {
         Row: {
           atualizado_em: string

@@ -40,33 +40,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = getSupabasePublicReadClient();
 
-    const { data: paginas } = await supabase
-      .from("paginas")
-      .select("slug, publicado_em, atualizado_em")
-      .eq("status", "publicado")
-      .order("publicado_em", { ascending: false });
+    const [paginasResult, postsResult] = await Promise.allSettled([
+      supabase
+        .from("paginas")
+        .select("slug, publicado_em, atualizado_em")
+        .eq("status", "publicado")
+        .order("publicado_em", { ascending: false }),
+      supabase
+        .from("posts")
+        .select("slug, publicado_em, atualizado_em")
+        .eq("status", "publicado")
+        .order("publicado_em", { ascending: false }),
+    ]);
 
-    if (paginas) {
-      const blogEntries: MetadataRoute.Sitemap = paginas.map((p) => {
+    const entries: MetadataRoute.Sitemap = [];
+
+    if (paginasResult.status === "fulfilled" && paginasResult.value.data) {
+      for (const p of paginasResult.value.data) {
         const refDate = p.atualizado_em ?? p.publicado_em;
         const { priority, changeFrequency } = sitemapParams(refDate);
-        return {
+        entries.push({
           url: `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
           lastModified: new Date(refDate ?? new Date()),
           changeFrequency,
           priority,
-          // Sinal de idioma explícito para o Google
-          alternates: {
-            languages: {
-              "pt-BR": `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
-            },
-          },
-        };
-      });
-      return [...base, ...blogEntries];
+          alternates: { languages: { "pt-BR": `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}` } },
+        });
+      }
     }
+
+    if (postsResult.status === "fulfilled" && postsResult.value.data) {
+      for (const p of postsResult.value.data) {
+        const refDate = p.atualizado_em ?? p.publicado_em;
+        const { priority, changeFrequency } = sitemapParams(refDate);
+        entries.push({
+          url: `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
+          lastModified: new Date(refDate ?? new Date()),
+          changeFrequency,
+          priority,
+          alternates: { languages: { "pt-BR": `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}` } },
+        });
+      }
+    }
+
+    if (entries.length > 0) return [...base, ...entries];
   } catch (err) {
-    console.error("[sitemap] error fetching paginas:", err);
+    console.error("[sitemap] error:", err);
   }
 
   return base;

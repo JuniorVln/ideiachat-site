@@ -8,6 +8,7 @@ import { formatDatePtBrLong } from "@/lib/format-date-br";
 import { HomeNav } from "@/components/home/HomeNav";
 import { HomeFooter } from "@/components/home/HomeFooter";
 import { BlogCategoryFilter } from "@/components/home/BlogCategoryFilter";
+import { listEditorialPosts, getCategoriaStyle, type BlogPostCard } from "@/lib/blog/load-post-editorial";
 
 type PaginaListItem = Pick<
   Tables<"paginas">,
@@ -47,18 +48,24 @@ function getCategoryFromSlug(slug: string): { label: string; gradient: string; d
 
 export default async function BlogArchivePage() {
   let paginas: PaginaListItem[] = [];
+  let posts: BlogPostCard[] = [];
 
-  try {
-    const supabase = getSupabasePublicReadClient();
-    const { data: paginasRaw } = await supabase
-      .from("paginas")
-      .select("slug, titulo, subtitulo, publicado_em, og_image_url, meta_description")
-      .eq("status", "publicado")
-      .order("publicado_em", { ascending: false });
-    paginas = (paginasRaw ?? []) as PaginaListItem[];
-  } catch {
-    // Build/deploy sem env Supabase ou indisponibilidade temporária: página vazia.
-  }
+  const [paginasResult, postsResult] = await Promise.allSettled([
+    (async () => {
+      const supabase = getSupabasePublicReadClient();
+      const { data } = await supabase
+        .from("paginas")
+        .select("slug, titulo, subtitulo, publicado_em, og_image_url, meta_description")
+        .eq("status", "publicado")
+        .order("publicado_em", { ascending: false });
+      return (data ?? []) as PaginaListItem[];
+    })(),
+    listEditorialPosts(),
+  ]);
+
+  if (paginasResult.status === "fulfilled") paginas = paginasResult.value;
+  if (postsResult.status === "fulfilled") posts = postsResult.value;
+
   const [featured, ...rest] = paginas;
 
   const collectionPageSchema = {
@@ -158,8 +165,42 @@ export default async function BlogArchivePage() {
       {/* ── Articles grid with category filter ── */}
       {rest.length > 0 && <BlogCategoryFilter posts={rest} />}
 
+      {/* ── Posts editoriais ── */}
+      {posts.length > 0 && (
+        <section className="bg-white border-t border-slate-100 py-16 lg:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-10">
+              <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Blog Editorial</p>
+              <h2 className="text-2xl font-bold text-slate-900">Conteúdo do Blog</h2>
+              <p className="mt-1 text-slate-500 text-sm">Artigos com dicas, estratégias e novidades para o seu negócio.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <EditorialPostCard key={post.slug} post={post} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── LPs (Soluções) ── */}
+      {paginas.length > 0 && (
+        <section className={`${posts.length > 0 ? "bg-slate-50 border-t border-slate-100" : "bg-[#0F172A]"} py-16 lg:py-20`}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {posts.length > 0 && (
+              <div className="mb-10">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Soluções</p>
+                <h2 className="text-2xl font-bold text-slate-900">Páginas de Soluções</h2>
+                <p className="mt-1 text-slate-500 text-sm">Conteúdo especializado sobre atendimento e automação para empresas.</p>
+              </div>
+            )}
+          </div>
+          {rest.length > 0 && <BlogCategoryFilter posts={rest} />}
+        </section>
+      )}
+
       {/* ── Empty state ── */}
-      {paginas.length === 0 && (
+      {paginas.length === 0 && posts.length === 0 && (
         <section className="bg-white py-24">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <p className="text-slate-400 text-lg">Nenhum artigo publicado ainda.</p>
@@ -227,6 +268,55 @@ function FeaturedCard({ pagina }: { pagina: PaginaListItem }) {
           Ler artigo completo
           <ArrowIcon />
         </span>
+      </div>
+    </Link>
+  );
+}
+
+function EditorialPostCard({ post }: { post: BlogPostCard }) {
+  const cat = getCategoriaStyle(post.categoria);
+  return (
+    <Link
+      href={`${PUBLIC_CONTENT_BASE_PATH}/${post.slug}`}
+      className="group flex flex-col rounded-2xl overflow-hidden border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 bg-white"
+    >
+      <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+        {post.imagem_capa_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={post.imagem_capa_url}
+            alt={post.titulo}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg className="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col flex-1 p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${cat.bg} ${cat.text}`}>
+            <span className={`w-1 h-1 rounded-full ${cat.dot}`} aria-hidden="true" />
+            {cat.label}
+          </span>
+          {post.publicado_em && (
+            <time className="text-xs text-slate-400">{formatDatePtBrLong(post.publicado_em)}</time>
+          )}
+        </div>
+        <h3 className="text-base font-bold text-slate-900 leading-snug group-hover:text-blue-700 transition-colors mb-2 line-clamp-2">
+          {post.titulo}
+        </h3>
+        {(post.resumo ?? post.subtitulo) && (
+          <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 flex-1">
+            {post.resumo ?? post.subtitulo}
+          </p>
+        )}
+        <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
+          Ler artigo <ArrowIcon className="w-3.5 h-3.5" />
+        </div>
       </div>
     </Link>
   );
