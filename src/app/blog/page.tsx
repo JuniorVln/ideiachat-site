@@ -143,10 +143,10 @@ export default async function BlogArchivePage() {
               Estratégias, novidades e casos reais para transformar seu atendimento via WhatsApp.
             </p>
 
-            {paginas.length > 0 && (
+            {paginas.length + posts.length > 0 && (
               <p className="mt-3 text-sm text-slate-500">
-                {paginas.length}{" "}
-                {paginas.length === 1 ? "artigo publicado" : "artigos publicados"}
+                {paginas.length + posts.length}{" "}
+                {paginas.length + posts.length === 1 ? "publicação" : "publicações"}
               </p>
             )}
           </div>
@@ -162,17 +162,14 @@ export default async function BlogArchivePage() {
         </section>
       )}
 
-      {/* ── Articles grid with category filter ── */}
-      {rest.length > 0 && <BlogCategoryFilter posts={rest} />}
-
-      {/* ── Posts editoriais ── */}
+      {/* ── Posts editoriais (tabela posts) ── */}
       {posts.length > 0 && (
         <section className="bg-white border-t border-slate-100 py-16 lg:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-10">
-              <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Blog Editorial</p>
-              <h2 className="text-2xl font-bold text-slate-900">Conteúdo do Blog</h2>
-              <p className="mt-1 text-slate-500 text-sm">Artigos com dicas, estratégias e novidades para o seu negócio.</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Blog</p>
+              <h2 className="text-2xl font-bold text-slate-900">Artigos</h2>
+              <p className="mt-1 text-slate-500 text-sm">Dicas, estratégias e novidades para o seu negócio.</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => (
@@ -183,20 +180,9 @@ export default async function BlogArchivePage() {
         </section>
       )}
 
-      {/* ── LPs (Soluções) ── */}
-      {paginas.length > 0 && (
-        <section className={`${posts.length > 0 ? "bg-slate-50 border-t border-slate-100" : "bg-[#0F172A]"} py-16 lg:py-20`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {posts.length > 0 && (
-              <div className="mb-10">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">Soluções</p>
-                <h2 className="text-2xl font-bold text-slate-900">Páginas de Soluções</h2>
-                <p className="mt-1 text-slate-500 text-sm">Conteúdo especializado sobre atendimento e automação para empresas.</p>
-              </div>
-            )}
-          </div>
-          {rest.length > 0 && <BlogCategoryFilter posts={rest} />}
-        </section>
+      {/* ── LPs do sistema (tabela paginas) — uma única listagem ── */}
+      {rest.length > 0 && (
+        <BlogCategoryFilter posts={rest} heading="Soluções" />
       )}
 
       {/* ── Empty state ── */}

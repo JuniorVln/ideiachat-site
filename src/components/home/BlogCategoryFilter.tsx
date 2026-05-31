@@ -33,7 +33,14 @@ function getCategoryFromSlug(slug: string): Category {
   return { key: "negocios", label: "Negócios", gradient: "from-slate-500 to-slate-700", dot: "bg-slate-400" };
 }
 
-export function BlogCategoryFilter({ posts }: { posts: Post[] }) {
+export function BlogCategoryFilter({
+  posts,
+  heading = "Todos os artigos",
+}: {
+  posts: Post[];
+  /** Título da seção (ex.: "Soluções" na listagem de LPs). */
+  heading?: string;
+}) {
   const [selected, setSelected] = useState<string>("todos");
 
   const categories = useMemo(() => {
@@ -60,7 +67,7 @@ export function BlogCategoryFilter({ posts }: { posts: Post[] }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header + filter pills */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-10">
-          <h2 className="text-xl font-bold text-slate-900 flex-shrink-0">Todos os artigos</h2>
+          <h2 className="text-xl font-bold text-slate-900 flex-shrink-0">{heading}</h2>
 
           <div
             role="group"
