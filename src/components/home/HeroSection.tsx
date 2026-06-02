@@ -219,7 +219,7 @@ export function HeroSection() {
                 ))}
               </div>
               <p className="text-white/90 text-[11px] leading-relaxed italic">
-                "Revolucionou meu atendimento. Não abro mão!"
+                &ldquo;Revolucionou meu atendimento. Não abro mão!&rdquo;
               </p>
               <div className="mt-2.5 pt-2 border-t border-white/20">
                 <p className="text-blue-300 text-[10px] font-bold">Abimael</p>

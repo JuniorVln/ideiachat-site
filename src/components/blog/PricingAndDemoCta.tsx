@@ -7,8 +7,6 @@ import {
   PriceUnlockProvider,
   RevealPricesButton,
 } from "@/components/ui/PriceGate";
-import { IDEIA } from "@/lib/ideia-brand";
-
 type PlanId = "essencial" | "avancado" | "premium" | "elite" | "corporativo";
 
 const FEATURES_PREVIEW = 4;
