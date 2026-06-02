@@ -101,6 +101,26 @@ export function PriceUnlockProvider({
   );
 }
 
+function PriceRevealEyeIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
 /**
  * Envolve um valor de preço, aplicando blur enquanto bloqueado.
  * Blur no próprio texto + máscara em gradiente (sem caixa fosca com borda visível).
@@ -108,10 +128,17 @@ export function PriceUnlockProvider({
 export function GatedPrice({
   children,
   className = "",
+  variant = "dark",
 }: {
   children: ReactNode;
   className?: string;
+  /** Fundo escuro (home) ou claro (cards do blog). */
+  variant?: "dark" | "light";
 }) {
+  const eyeShell =
+    variant === "dark"
+      ? "text-white/90 ring-white/30 bg-white/15 group-hover:bg-white/25 group-hover:ring-white/45"
+      : "text-slate-600 ring-slate-300/80 bg-slate-100 group-hover:bg-slate-200 group-hover:ring-slate-400/60";
   const { unlocked, requestUnlock } = usePriceUnlock();
   const [storageUnlocked, setStorageUnlocked] = useState(false);
 
@@ -130,7 +157,7 @@ export function GatedPrice({
 
   return (
     <span
-      className={`relative inline-flex min-w-[3.5ch] cursor-pointer select-none items-baseline ${className}`}
+      className="group relative inline-flex min-w-[3.5ch] cursor-pointer select-none items-center gap-1.5"
       onClick={requestUnlock}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -140,13 +167,20 @@ export function GatedPrice({
       }}
       role="button"
       tabIndex={0}
-      aria-label="Ver valores dos planos"
+      title="Clique para ver o preço"
+      aria-label="Clique para ver o preço"
     >
       <span
-        className="inline-block pointer-events-none blur-[6px] opacity-[0.48] saturate-[0.4] [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)]"
+        className={`inline-block pointer-events-none blur-[6px] opacity-[0.48] saturate-[0.4] [mask-image:linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] ${className}`}
         aria-hidden
       >
         {children}
+      </span>
+      <span
+        className={`shrink-0 rounded-full p-1 ring-1 transition-colors ${eyeShell}`}
+        aria-hidden
+      >
+        <PriceRevealEyeIcon />
       </span>
     </span>
   );
@@ -190,10 +224,7 @@ export function RevealPricesButton({
         </>
       ) : (
         <>
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
-            <rect x="4" y="10" width="16" height="10" rx="2" />
-            <path strokeLinecap="round" d="M8 10V7a4 4 0 018 0" />
-          </svg>
+          <PriceRevealEyeIcon className="h-4 w-4" />
           {lockedLabel}
         </>
       )}

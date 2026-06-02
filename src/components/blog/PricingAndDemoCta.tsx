@@ -145,6 +145,7 @@ function PlanCard({
             <div className="flex items-baseline gap-1">
               <span className={`text-base font-medium ${isHighlighted ? "text-white/70" : "text-slate-400"}`}>R$</span>
               <GatedPrice
+                variant={isHighlighted ? "dark" : "light"}
                 className={`text-4xl font-black font-ideia tabular-nums ${
                   isHighlighted ? "text-white" : "text-slate-900"
                 }`}
