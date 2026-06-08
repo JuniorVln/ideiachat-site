@@ -24,9 +24,7 @@ export const IDEIA = {
   homeUrl: home,
   cnpj: process.env.NEXT_PUBLIC_IDEIA_CNPJ ?? "",
   address: process.env.NEXT_PUBLIC_IDEIA_ADDRESS ?? "",
-  privacyUrl:
-    process.env.NEXT_PUBLIC_IDEIA_PRIVACY_URL ??
-    "https://ideiamultichat.com.br/politica-de-privacidade/",
+  privacyUrl: process.env.NEXT_PUBLIC_IDEIA_PRIVACY_URL ?? "/privacidade",
   instagramUrl:
     process.env.NEXT_PUBLIC_IDEIA_INSTAGRAM_URL ?? "https://www.instagram.com/ideiachat/",
   /** Link público WhatsApp (site / footer) */

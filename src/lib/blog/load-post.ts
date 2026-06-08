@@ -2,7 +2,7 @@ import { cache } from "react";
 import { getPagina, type PaginaComVariacoes } from "./get-pagina";
 import { getBlogVisuals, getTermoKeyword, type BlogVisuals } from "./blog-visuals";
 import { getSupabasePublicReadClient } from "@/lib/supabase/public";
-import { PUBLIC_CONTENT_BASE_PATH } from "@/lib/public-pages";
+import { LP_BASE_PATH } from "@/lib/public-pages";
 
 export type RelatedPage = {
   slug: string;
@@ -40,7 +40,7 @@ async function getRelatedPages(
       slug: p.slug,
       titulo: p.titulo,
       subtitulo: p.subtitulo ?? null,
-      href: `${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
+      href: `${LP_BASE_PATH}/${p.slug}`,
     }));
   }
 
@@ -57,7 +57,7 @@ async function getRelatedPages(
     slug: p.slug,
     titulo: p.titulo,
     subtitulo: p.subtitulo ?? null,
-    href: `${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
+    href: `${LP_BASE_PATH}/${p.slug}`,
   }));
 }
 

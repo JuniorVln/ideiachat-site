@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSupabasePublicReadClient } from "@/lib/supabase/public";
-import { PUBLIC_CONTENT_BASE_PATH } from "@/lib/public-pages";
+import { BLOG_BASE_PATH, LP_BASE_PATH } from "@/lib/public-pages";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,6 @@ export const revalidate = 3600;
 
 const SITE_URL = getSiteUrl();
 
-/** Retorna prioridade e changeFrequency baseadas na data de publicação. */
 function sitemapParams(dateStr: string | null | undefined): {
   priority: number;
   changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
@@ -30,17 +29,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}`,
+      url: `${SITE_URL}${LP_BASE_PATH}`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 0.9,
+      priority: 0.95,
+    },
+    {
+      url: `${SITE_URL}${BLOG_BASE_PATH}`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
+      url: `${SITE_URL}/privacidade`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
     },
   ];
+
+  const entries: MetadataRoute.Sitemap = [...base];
 
   try {
     const supabase = getSupabasePublicReadClient();
 
-    const [paginasResult, postsResult] = await Promise.allSettled([
+    const [{ data: paginas }, { data: posts }] = await Promise.all([
       supabase
         .from("paginas")
         .select("slug, publicado_em, atualizado_em")
@@ -53,40 +66,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .order("publicado_em", { ascending: false }),
     ]);
 
-    const entries: MetadataRoute.Sitemap = [];
-
-    if (paginasResult.status === "fulfilled" && paginasResult.value.data) {
-      for (const p of paginasResult.value.data) {
+    if (paginas) {
+      for (const p of paginas) {
         const refDate = p.atualizado_em ?? p.publicado_em;
         const { priority, changeFrequency } = sitemapParams(refDate);
+        const url = `${SITE_URL}${LP_BASE_PATH}/${p.slug}`;
         entries.push({
-          url: `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
+          url,
           lastModified: new Date(refDate ?? new Date()),
           changeFrequency,
           priority,
-          alternates: { languages: { "pt-BR": `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}` } },
+          alternates: { languages: { "pt-BR": url } },
         });
       }
     }
 
-    if (postsResult.status === "fulfilled" && postsResult.value.data) {
-      for (const p of postsResult.value.data) {
+    if (posts) {
+      for (const p of posts) {
         const refDate = p.atualizado_em ?? p.publicado_em;
         const { priority, changeFrequency } = sitemapParams(refDate);
+        const url = `${SITE_URL}${BLOG_BASE_PATH}/${p.slug}`;
         entries.push({
-          url: `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}`,
+          url,
           lastModified: new Date(refDate ?? new Date()),
           changeFrequency,
-          priority,
-          alternates: { languages: { "pt-BR": `${SITE_URL}${PUBLIC_CONTENT_BASE_PATH}/${p.slug}` } },
+          priority: Math.min(priority, 0.85),
+          alternates: { languages: { "pt-BR": url } },
         });
       }
     }
-
-    if (entries.length > 0) return [...base, ...entries];
   } catch (err) {
     console.error("[sitemap] error:", err);
   }
 
-  return base;
+  return entries;
 }

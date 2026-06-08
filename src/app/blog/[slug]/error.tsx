@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { CONTENT_HUB_NAME, PUBLIC_CONTENT_BASE_PATH } from "@/lib/public-pages";
+import { BLOG_BASE_PATH } from "@/lib/public-pages";
 
 export default function PublicSalesPageError({
   error,
@@ -33,8 +33,8 @@ export default function PublicSalesPageError({
           >
             Tentar novamente
           </button>
-          <Link href={PUBLIC_CONTENT_BASE_PATH} className="text-brand-primary font-medium hover:underline">
-            {CONTENT_HUB_NAME}
+          <Link href={BLOG_BASE_PATH} className="text-brand-primary font-medium hover:underline">
+            Blog
           </Link>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import type { WithContext, Article, FAQPage, BreadcrumbList, SoftwareApplication } from "schema-dts";
-import { CONTENT_HUB_NAME, PUBLIC_CONTENT_BASE_PATH } from "@/lib/public-pages";
+import { CONTENT_HUB_NAME, LP_BASE_PATH } from "@/lib/public-pages";
 import { IDEIA } from "@/lib/ideia-brand";
 
 interface FaqItem {
@@ -21,6 +21,10 @@ interface SchemaOrgProps {
   articleSection?: string | null;
   /** "article" (padrão) ou "produto" — emite SoftwareApplication em vez de Article */
   tipo?: "article" | "produto";
+  /** Prefixo da URL pública (ex.: `/solucoes` para LP). */
+  basePath?: string;
+  /** Nome do hub no breadcrumb (default: Soluções). */
+  hubName?: string;
 }
 
 const publisherLogo = {
@@ -41,9 +45,11 @@ export function SchemaOrg({
   imageUrl,
   articleSection,
   tipo = "article",
+  basePath = LP_BASE_PATH,
+  hubName = CONTENT_HUB_NAME,
 }: SchemaOrgProps) {
-  const pageUrl = `${siteUrl}${PUBLIC_CONTENT_BASE_PATH}/${slug}`;
-  const hubUrl = `${siteUrl}${PUBLIC_CONTENT_BASE_PATH}`;
+  const pageUrl = `${siteUrl}${basePath}/${slug}`;
+  const hubUrl = `${siteUrl}${basePath}`;
 
   const schemas: object[] = [];
 
@@ -128,7 +134,7 @@ export function SchemaOrg({
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Início", item: siteUrl },
-      { "@type": "ListItem", position: 2, name: CONTENT_HUB_NAME, item: hubUrl },
+      { "@type": "ListItem", position: 2, name: hubName, item: hubUrl },
       { "@type": "ListItem", position: 3, name: titulo, item: pageUrl },
     ],
   };

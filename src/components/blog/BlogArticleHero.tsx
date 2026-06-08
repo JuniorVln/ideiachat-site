@@ -5,10 +5,12 @@ import { ScrollToSectionButton } from "@/components/ui/ScrollToSectionButton";
 import { IDEIA } from "@/lib/ideia-brand";
 import { heroTitleParts } from "@/lib/blog/hero-title";
 import { formatDatePtBrLong } from "@/lib/format-date-br";
-import { CONTENT_HUB_NAME, HERO_BRAND_LINE, PUBLIC_CONTENT_BASE_PATH } from "@/lib/public-pages";
+import { CONTENT_HUB_NAME, HERO_BRAND_LINE, LP_BASE_PATH } from "@/lib/public-pages";
 
 /** Cor de fundo base do hero (azul muito escuro, coerente com a marca). */
 const BG = "#0f172a";
+
+const HERO_INFLUENCER_SRC = "/Abimael recorte.png";
 
 interface SalesPageHeroProps {
   titulo: string;
@@ -88,12 +90,12 @@ export function SalesPageHero({
               transparent    88%)`,
           }}
         />
-        {/* borda direita */}
+        {/* borda direita — mais suave para não esconder o Abimael */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to left, rgba(15,23,42,.5) 0%, transparent 20%)",
+              "linear-gradient(to left, rgba(15,23,42,.28) 0%, transparent 18%)",
           }}
         />
         {/* borda superior */}
@@ -121,6 +123,24 @@ export function SalesPageHero({
           className="absolute inset-0 md:hidden"
           style={{ background: "rgba(15,23,42,.65)" }}
         />
+      </div>
+
+      {/* ── Camada 1.5 · Abimael (coluna direita, encostado embaixo) ──────── */}
+      <div
+        className="pointer-events-none absolute inset-y-0 left-[55%] right-0 z-[15] hidden md:flex items-end justify-center px-4 lg:px-8 xl:px-12"
+        aria-hidden
+      >
+        <div className="relative w-full max-w-[340px] lg:max-w-[400px] xl:max-w-[460px] 2xl:max-w-[480px] h-full">
+          <Image
+            src={HERO_INFLUENCER_SRC}
+            alt=""
+            fill
+            className="object-contain object-bottom select-none"
+            style={{ filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.4))" }}
+            sizes="(min-width: 1024px) 480px, 0px"
+            priority
+          />
+        </div>
       </div>
 
       {/* ── Camada 2 · conteúdo ─────────────────────────────────────────── */}
@@ -153,7 +173,7 @@ export function SalesPageHero({
             </li>
             <li aria-hidden className="text-zinc-600">/</li>
             <li>
-              <Link href={PUBLIC_CONTENT_BASE_PATH} className="hover:text-white transition-colors">
+              <Link href={LP_BASE_PATH} className="hover:text-white transition-colors">
                 {CONTENT_HUB_NAME}
               </Link>
             </li>

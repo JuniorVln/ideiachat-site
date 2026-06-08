@@ -5,7 +5,7 @@ const maven = Maven_Pro({
   display: "swap",
 });
 
-/** Layout dos artigos editoriais em `/blog/*`. */
-export default function PublicContentLayout({ children }: { children: React.ReactNode }) {
+/** Layout das landing pages em `/solucoes/*`. */
+export default function SolucoesLayout({ children }: { children: React.ReactNode }) {
   return <div className={maven.className}>{children}</div>;
 }

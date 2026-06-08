@@ -152,8 +152,9 @@ export function BlogLegalFooter() {
             <a
               href={IDEIA.privacyUrl}
               className="underline underline-offset-2 hover:text-white"
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(IDEIA.privacyUrl.startsWith("http")
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
             >
               Política de privacidade
             </a>

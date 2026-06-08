@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { getSiteUrl } from "@/lib/site-url";
 import { IDEIA } from "@/lib/ideia-brand";
+import { ClarityScript } from "@/components/ClarityScript";
 import { WhatsAppFloatingButton } from "@/components/ui/WhatsAppFloatingButton";
 import "./base.css";
 import "./globals.css";
@@ -89,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <WhatsAppFloatingButton />
         {IS_PROD && GA4_ID && <GoogleAnalytics gaId={GA4_ID} />}
+        <ClarityScript />
       </body>
     </html>
   );
