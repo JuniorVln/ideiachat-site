@@ -14,7 +14,7 @@ function absUrl(path: string): string {
   }
 }
 
-const waDigits = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5551995232447").replace(/\D/g, "");
+const waDigits = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5551998681452").replace(/\D/g, "");
 
 export const IDEIA = {
   logoUrl:
@@ -32,9 +32,9 @@ export const IDEIA = {
     process.env.NEXT_PUBLIC_IDEIA_WHATSAPP_PUBLIC_URL ?? `https://wa.me/${waDigits}`,
   /** Apenas dígitos do número público (uso interno em modais/formulários). */
   whatsappDigits: waDigits,
-  footerPhoneDisplay: process.env.NEXT_PUBLIC_IDEIA_PHONE_DISPLAY ?? "(51) 99523-2447",
+  footerPhoneDisplay: process.env.NEXT_PUBLIC_IDEIA_PHONE_DISPLAY ?? "(51) 99868-1452",
   footerPhoneTel:
-    process.env.NEXT_PUBLIC_IDEIA_PHONE_TEL ?? "tel:+5551995232447",
+    process.env.NEXT_PUBLIC_IDEIA_PHONE_TEL ?? "tel:+5551998681452",
   footerHours:
     process.env.NEXT_PUBLIC_IDEIA_BUSINESS_HOURS ??
     "De segunda a sexta, das 08h12 às 18h00",
